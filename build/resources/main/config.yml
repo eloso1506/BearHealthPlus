@@ -1,0 +1,107 @@
+# ===========================================================
+# BearHealthPlus - Configuración del Plugin
+#
+# Información de Contacto:
+# Discord: eloso1506
+# GitHub: https://github.com/eloso1506
+#
+#          ʕ•ᴥ•ʔ
+# ===========================================================
+
+# ===============================
+# 🔧 OPCIONES GENERALES DEL PLUGIN
+# ===============================
+settings:
+  # Habilitar hook con ItemsAdder. Si está en "auto", intentará detectar si ItemsAdder está instalado.
+  IA_hook: "auto"  # Opciones: "true", "false", "auto"
+  
+  # Idioma del plugin (puede cambiarse entre 'es' o 'en')
+  language: "es"
+  
+  # ===============================
+  # ❤️ Configuración de Corazones
+  # ===============================
+  max_additional_hearts: 50  # Máximo de corazones extra que un jugador puede tener
+
+  # ===============================
+  # 🧪 Experiencia y Costos
+  # ===============================
+  experience:
+    enabled: true  # Si se usa experiencia para aumentar corazones
+    multiplier: 2  # Multiplicador de experiencia (hearts_actuales * multiplier)
+
+# ===============================
+# 📩 MENSAJES DEL PLUGIN
+# ===============================
+messages:
+  es:
+    common:
+      prefix: "§6[BearHealthPlus]§r "
+      error: "§cError:§r "
+      success: "§aÉxito:§r "
+    health:
+      increased: "%prefix% ¡Tu salud máxima ha aumentado en %hearts% corazones!"
+      reset: "%prefix% Tu salud ha sido restablecida."
+      set: "%success% La salud de %player% ha sido establecida en %hearts% corazones."
+      insufficient_experience: "%error% ¡No tienes suficiente experiencia!"
+      cooldown_ended: "%prefix% ¡Tu cooldown ha terminado!"
+    commands:
+      help: |
+        %prefix% §eLista de comandos:
+        §7- /bhp help §f→ Muestra esta guía.
+        §7- /bhp give <ítem> <cantidad> [jugador] §f→ Da un ítem.
+        §7- /bhp get <ítem> §f→ Obtén un ítem.
+        §7- /bhp reset <jugador> §f→ Restablece la salud de un jugador.
+        §7- /bhp set <jugador> <corazones> §f→ Establece la salud de un jugador.
+        §7- /bhp reload §f→ Recarga la configuración.
+
+      usage: "%prefix% Uso: /bhp [help|reload|give|get|reset|set] ..."
+      config_reloaded: "%success% Configuración recargada con éxito."
+      give_usage: "%prefix% Uso: /bhp give [id_item] [cantidad] [jugador (opcional)]"
+      get_usage: "%prefix% Uso: /bhp get [id_item]"
+      reset_usage: "%prefix% Uso: /bhp reset [jugador]"
+      set_usage: "%prefix% Uso: /bhp set [jugador] [corazones]"
+      unknown_command: "%error% Comando desconocido."
+      invalid_quantity: "%error% La cantidad debe ser un número."
+      player_not_found: "%error% Jugador no encontrado."
+      item_not_found: "%error% El ítem '%item%' no se encuentra."
+      item_given: "%success% Se ha dado %amount% de %item% a %player%."
+      item_received: "%success% Has recibido %amount% de %item%."
+      hearts_added: "%success% Se han añadido %hearts% corazones a %player%."
+      health_reset_message: "%success% Se ha restablecido la salud de %player%."
+
+  en:
+    common:
+      prefix: "§6[BearHealthPlus]§r "
+      error: "§cError:§r "
+      success: "§aSuccess:§r "
+    health:
+      increased: "%prefix% Your max health has increased by %hearts% hearts!"
+      reset: "%prefix% Your health has been reset."
+      set: "%success% %player%'s health has been set to %hearts% hearts."
+      insufficient_experience: "%error% Not enough experience!"
+      cooldown_ended: "%prefix% Your cooldown has ended!"
+    commands:
+      help: |
+        %prefix% §eCommand list:
+        §7- /bhp help §f→ Shows this guide.
+        §7- /bhp give <item> <amount> [player] §f→ Gives an item.
+        §7- /bhp get <item> §f→ Get an item.
+        §7- /bhp reset <player> §f→ Reset a player's health.
+        §7- /bhp set <player> <hearts> §f→ Set a player's health.
+        §7- /bhp reload §f→ Reload the config.
+
+      usage: "%prefix% Usage: /bhp [help|reload|give|get|reset|set] ..."
+      config_reloaded: "%success% Configuration reloaded successfully."
+      give_usage: "%prefix% Usage: /bhp give [item_id] [quantity] [player (optional)]"
+      get_usage: "%prefix% Usage: /bhp get [item_id]"
+      reset_usage: "%prefix% Usage: /bhp reset [player]"
+      set_usage: "%prefix% Usage: /bhp set [player] [hearts]"
+      unknown_command: "%error% Unknown command."
+      invalid_quantity: "%error% Quantity must be a number."
+      player_not_found: "%error% Player not found."
+      item_not_found: "%error% The item with ID '%item%' cannot be found."
+      item_given: "%success% Given %amount% of %item% to %player%."
+      item_received: "%success% You have received %amount% of %item%."
+      hearts_added: "%success% Added %hearts% hearts to %player%."
+      health_reset_message: "%success% Health has been reset for %player%."

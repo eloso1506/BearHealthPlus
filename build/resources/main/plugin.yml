@@ -1,0 +1,35 @@
+name: BearHealthPlus
+version: 1.1.0
+main: com.bonifazlandmc.bearhealthplus.BearHealthPlus
+api-version: 1.20
+author: BonifazlandMC
+description: Un plugin que hice para aumentar la vida a jugadores para replicar un mod y utilizarlo en BonifazlandMC pq no encontré opciones similares o parecidas en ningún lado dx.
+authors:
+    - eloso1506
+softdepend: [ItemsAdder]
+commands:
+  bhp:
+    description: Comando principal de BearHealthPlus.
+    usage: /bhp <subcomando>
+    aliases: [bearhealth, bhealth]
+    permission: bearhealthplus.use
+    permission-message: "&cNo tienes permiso para usar este comando."
+permissions:
+  bearhealthplus.use:
+    description: Permite usar los comandos de BearHealthPlus.
+    default: op
+  bearhealthplus.give:
+    description: Permite dar ítems a otros jugadores.
+    default: op
+  bearhealthplus.get:
+    description: Permite obtener un ítem para sí mismo.
+    default: true
+  bearhealthplus.reset:
+    description: Permite resetear la vida de un jugador.
+    default: op
+  bearhealthplus.set:
+    description: Permite establecer la vida de un jugador.
+    default: op
+  bearhealthplus.reload:
+    description: Permite recargar la configuración del plugin.
+    default: op

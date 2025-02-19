@@ -1,0 +1,37 @@
+items:
+  prueba2:
+    item:
+      name: "&cCorazon"
+      material: "PAPER"
+      customModelData: 3
+    settings:
+      hearts: 3
+      cooldown: 60
+      xp_cost: 10     
+    recipe:
+        Shape:
+        - "LLL"
+        - "LCL"
+        - "LLL"
+        Materials:
+        L: "LEATHER"
+        C: "CHEST"         
+  prueba1:
+    item:
+      name: "&cCorazon"
+      material: "IA:<my_namespace>:<my_item>"
+      lore:
+        - "&7Aumenta 1 corazón al usuario."
+      customModelData: 100
+    settings:
+      hearts: 1
+      cooldown: 10
+      xp_cost: 5
+    Recipe:
+        Shape:
+        - "LLL"
+        - "LCL"
+        - "LLL"
+        Materials:
+        L: "IA:<my_namespace>:<my_item>"
+        C: "IA:<my_namespace>:<my_item>"                      

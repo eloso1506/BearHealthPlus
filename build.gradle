@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group 'com.bonifazlandmc'
+version '1.1 SUPER ULTRA HYPER MEGA ZEKRET'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://jitpack.io' } 
+    flatDir { dirs 'libs' } 
+}
+
+dependencies {
+    implementation 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('BearHealthPlus')
+    archiveVersion.set(version)
+    archiveClassifier.set('')
+}
+
+build {
+    dependsOn shadowJar
+}
