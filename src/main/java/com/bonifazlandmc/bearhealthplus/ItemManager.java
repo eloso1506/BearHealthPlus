@@ -33,10 +33,8 @@ public class ItemManager {
             return;
         }
         config = YamlConfiguration.loadConfiguration(itemsFile);
-
-        // Remover recetas anteriores
 	for (String keyString : registeredRecipes.keySet()) {
-		NamespacedKey key = new NamespacedKey(plugin, keyString); // Convierte String a NamespacedKey
+		NamespacedKey key = new NamespacedKey(plugin, keyString);
 		Bukkit.removeRecipe(key);
 	}
         registeredRecipes.clear();
@@ -134,13 +132,11 @@ public class ItemManager {
             plugin.getLogger().warning("Receta incompleta para el ítem: " + path);
             return null;
         }
-
-        // Verificar si la receta usa ItemsAdder y si no está habilitado
         if (!plugin.isUsingItemsAdder()) {
             for (String materialName : materials.values()) {
                 if (materialName.startsWith("IA:")) {
                     plugin.getLogger().warning("ItemsAdder no está presente. Omitiendo receta: " + path);
-                    return null; // Omitir la receta completa antes de procesarla
+                    return null; 
                 }
             }
         }
@@ -167,11 +163,11 @@ public class ItemManager {
                         ));
                     } else {
                         plugin.getLogger().warning("ItemsAdder: No se encontró el ítem " + materialName);
-                        return null; // Evita registrar la receta si el ítem no existe
+                        return null; 
                     }
                 } catch (Exception e) {
                     plugin.getLogger().warning("Error al intentar cargar un ítem de ItemsAdder: " + e.getMessage());
-                    return null; // Evita registrar la receta en caso de error
+                    return null; 
                 }
             } else {
                 Material material = Material.getMaterial(materialName);
@@ -179,7 +175,7 @@ public class ItemManager {
                     shapedRecipe.setIngredient(keyChar, material);
                 } else {
                     plugin.getLogger().warning("Material inválido en la receta: " + materialName);
-                    return null; // Evita registrar recetas con materiales inválidos
+                    return null; 
                 }
             }
         }
