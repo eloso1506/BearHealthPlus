@@ -59,62 +59,89 @@ public class BearHealthPlus extends JavaPlugin implements Listener, CommandExecu
         itemsConfig = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "items.yml"));
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player) && (args.length == 0 || !args[0].equalsIgnoreCase("reload"))) {
-            sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por jugadores.");
-            return true;
-        }
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if (!(sender instanceof Player) && (args.length == 0 || !args[0].equalsIgnoreCase("reload"))) {
+			sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por jugadores.");
+			return true;
+		}
+	
+		// Comando /bhp add {corazones} {jugador}
+		if (args.length >= 3 && args[0].equalsIgnoreCase("add")) {
+			if (!sender.hasPermission("bhp.admin")) {
+				sender.sendMessage(ChatColor.RED + "No tienes permiso para usar este comando.");
+				return true;
+			}
+	
+			Player target = Bukkit.getPlayer(args[2]);
+			if (target == null) {
+				sender.sendMessage(ChatColor.RED + "El jugador no está en línea.");
+				return true;
+			}
+	
+			try {
+				int extraHearts = Integer.parseInt(args[1]);
+				AttributeInstance maxHealth = target.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				if (maxHealth != null) {
+					double newHealth = maxHealth.getBaseValue() + (extraHearts * 2);
+					maxHealth.setBaseValue(newHealth);
+					sender.sendMessage(ChatColor.GREEN + "Se añadieron " + extraHearts + " corazones a " + target.getName() + ".");
+				}
+			} catch (NumberFormatException e) {
+				sender.sendMessage(ChatColor.RED + "Número de corazones inválido.");
+			}
+			return true;
+		}
+			switch (args.length > 0 ? args[0].toLowerCase() : "") {
+			case "help":
+				sendHelpMessage(sender);
+				break;
+	
+			case "give":
+				if (args.length < 4) {
+					sender.sendMessage(ChatColor.RED + "Uso: /bhp give {item} {cantidad} {jugador}");
+					break;
+				}
+				giveItem(sender, args);
+				break;
+	
+			case "get":
+				if (args.length < 2) {
+					sender.sendMessage(ChatColor.RED + "Uso: /bhp get {item}");
+					break;
+				}
+				getItem(sender, args[1]);
+				break;
+	
+			case "reset":
+				if (args.length < 2) {
+					sender.sendMessage(ChatColor.RED + "Uso: /bhp reset {jugador}");
+					break;
+				}
+				resetHealth(sender, args[1]);
+				break;
+	
+			case "set":
+				if (args.length < 3) {
+					sender.sendMessage(ChatColor.RED + "Uso: /bhp set {jugador} {corazones}");
+					break;
+				}
+				setHealth(sender, args[1], args[2]);
+				break;
+	
+			case "reload":
+				reloadConfig();
+				reloadItemsConfig();
+				sender.sendMessage(ChatColor.GREEN + "Configuraciones recargadas correctamente.");
+				break;
+	
+			default:
+				sender.sendMessage(ChatColor.RED + "Comando desconocido. Usa /bhp help para ver los comandos.");
+				break;
+		}
+		return true;
+	}
 
-        switch (args.length > 0 ? args[0].toLowerCase() : "") {
-            case "help":
-                sendHelpMessage(sender);
-                break;
-
-            case "give":
-                if (args.length < 4) {
-                    sender.sendMessage(ChatColor.RED + "Uso: /bhp give {item} {cantidad} {jugador}");
-                    break;
-                }
-                giveItem(sender, args);
-                break;
-
-            case "get":
-                if (args.length < 2) {
-                    sender.sendMessage(ChatColor.RED + "Uso: /bhp get {item}");
-                    break;
-                }
-                getItem(sender, args[1]);
-                break;
-
-            case "reset":
-                if (args.length < 2) {
-                    sender.sendMessage(ChatColor.RED + "Uso: /bhp reset {jugador}");
-                    break;
-                }
-                resetHealth(sender, args[1]);
-                break;
-
-            case "set":
-                if (args.length < 3) {
-                    sender.sendMessage(ChatColor.RED + "Uso: /bhp set {jugador} {corazones}");
-                    break;
-                }
-                setHealth(sender, args[1], args[2]);
-                break;
-
-            case "reload":
-                reloadConfig();
-                reloadItemsConfig();
-                sender.sendMessage(ChatColor.GREEN + "Configuraciones recargadas correctamente.");
-                break;
-
-            default:
-                sender.sendMessage(ChatColor.RED + "Comando desconocido. Usa /bhp help para ver los comandos.");
-                break;
-        }
-        return true;
-    }
 
     private void sendHelpMessage(CommandSender sender) {
         sender.sendMessage(ChatColor.GOLD + "=== BearHealthPlus Comandos ===");

@@ -1,30 +1,28 @@
 package com.bonifazlandmc.bearhealthplus;
 
-import dev.lone.itemsadder.api.CustomStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.ChatColor;
-
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ItemManager {
-
     private final BearHealthPlus plugin;
     private YamlConfiguration config;
     private final Map<String, ShapedRecipe> registeredRecipes = new HashMap<>();
 
     public ItemManager(BearHealthPlus plugin, boolean useItemsAdder) {
-    this.plugin = plugin;
-    reloadItems();
-    registerAllRecipes();
-	}
+        this.plugin = plugin;
+        reloadItems();
+        registerAllRecipes();
+    }
 
     public void reloadItems() {
         File itemsFile = new File(plugin.getDataFolder(), "items.yml");
@@ -33,71 +31,55 @@ public class ItemManager {
             return;
         }
         config = YamlConfiguration.loadConfiguration(itemsFile);
-	for (String keyString : registeredRecipes.keySet()) {
-		NamespacedKey key = new NamespacedKey(plugin, keyString);
-		Bukkit.removeRecipe(key);
-	}
+
+        // Eliminar recetas antiguas antes de recargar
+        for (String keyString : registeredRecipes.keySet()) {
+            NamespacedKey key = new NamespacedKey(plugin, keyString);
+            Bukkit.removeRecipe(key);
+        }
         registeredRecipes.clear();
 
         registerAllRecipes();
         plugin.getLogger().info("Ítems y recetas recargados correctamente.");
     }
 
-    private Map<String, Object> getItemData(String path) {
-        if (config == null || !config.contains("items." + path)) return null;
-        return config.getConfigurationSection("items." + path).getValues(false);
+    private ConfigurationSection getItemSection(String path) {
+        if (config == null) return null;
+        return config.getConfigurationSection("items." + path);
     }
 
     public ItemStack loadItem(String path) {
-        Map<String, Object> itemData = getItemData(path);
-        if (itemData == null) return null;
+        ConfigurationSection itemSection = getItemSection(path);
+        if (itemSection == null) return null;
 
-        Map<String, Object> item = (Map<String, Object>) itemData.get("item");
+        ConfigurationSection item = itemSection.getConfigurationSection("item");
         if (item == null) return null;
 
-        String name = ChatColor.translateAlternateColorCodes('&', (String) item.getOrDefault("name", "&fÍtem Desconocido"));
-        List<String> lore = ((List<String>) item.getOrDefault("lore", new ArrayList<>())).stream()
+        String name = ChatColor.translateAlternateColorCodes('&', item.getString("name", "&fÍtem Desconocido"));
+        List<String> lore = item.getStringList("lore").stream()
                 .map(line -> ChatColor.translateAlternateColorCodes('&', line))
                 .collect(Collectors.toList());
 
-        String materialString = (String) item.getOrDefault("material", "PAPER");
-
+        String materialString = item.getString("material", "PAPER");
         ItemStack itemStack;
-        try {
-            if (materialString.startsWith("IA:") && plugin.isUsingItemsAdder()) {
-                try {
-                    Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
-                    Object customStack = customStackClass.getMethod("getInstance", String.class)
-                            .invoke(null, materialString.replace("IA:", ""));
-                    if (customStack != null) {
-                        itemStack = (ItemStack) customStackClass.getMethod("getItemStack").invoke(customStack);
-                    } else {
-                        plugin.getLogger().warning("ItemsAdder: No se encontró el ítem " + materialString);
-                        return null;
-                    }
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Error al intentar cargar un ítem de ItemsAdder: " + e.getMessage());
-                    return null;
-                }
-            } else {
-                Material material = Material.getMaterial(materialString);
-                if (material == null) {
-                    plugin.getLogger().warning("Material inválido: " + materialString);
-                    return null;
-                }
-                itemStack = new ItemStack(material);
+
+        if (materialString.startsWith("IA:") && plugin.isUsingItemsAdder()) {
+            itemStack = loadItemsAdderItem(materialString);
+        } else {
+            Material material = Material.getMaterial(materialString);
+            if (material == null) {
+                plugin.getLogger().warning("Material inválido: " + materialString);
+                return null;
             }
-        } catch (NoClassDefFoundError e) {
-            plugin.getLogger().warning("ItemsAdder no está presente. Ignorando ítem personalizado.");
-            return null;
+            itemStack = new ItemStack(material);
         }
 
         ItemMeta meta = itemStack.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(name);
             meta.setLore(lore);
-            if (item.containsKey("customModelData")) {
-                meta.setCustomModelData((int) item.get("customModelData"));
+            if (item.contains("customModelData")) {
+                meta.setCustomModelData(item.getInt("customModelData"));
             }
             itemStack.setItemMeta(meta);
         }
@@ -105,9 +87,23 @@ public class ItemManager {
         return itemStack;
     }
 
-    private void registerAllRecipes() {
-        registeredRecipes.clear();
+    private ItemStack loadItemsAdderItem(String materialString) {
+        try {
+            Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
+            Object customStack = customStackClass.getMethod("getInstance", String.class)
+                    .invoke(null, materialString.replace("IA:", ""));
+            if (customStack != null) {
+                return (ItemStack) customStackClass.getMethod("getItemStack").invoke(customStack);
+            } else {
+                plugin.getLogger().warning("ItemsAdder: No se encontró el ítem " + materialString);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Error al cargar un ítem de ItemsAdder: " + e.getMessage());
+        }
+        return null;
+    }
 
+    private void registerAllRecipes() {
         if (config == null || !config.contains("items")) return;
 
         for (String path : config.getConfigurationSection("items").getKeys(false)) {
@@ -121,22 +117,27 @@ public class ItemManager {
     }
 
     public ShapedRecipe getRecipe(String path) {
-        Map<String, Object> itemData = getItemData(path);
-        if (itemData == null || !itemData.containsKey("recipe")) return null;
+        ConfigurationSection itemSection = getItemSection(path);
+        if (itemSection == null) return null;
 
-        Map<String, Object> recipeData = (Map<String, Object>) itemData.get("recipe");
-        List<String> shape = (List<String>) recipeData.get("Shape");
-        Map<String, String> materials = (Map<String, String>) recipeData.get("Materials");
+        ConfigurationSection recipeSection = itemSection.getConfigurationSection("recipe");
+        if (recipeSection == null) return null;
 
-        if (shape == null || materials == null) {
+        List<String> shape = recipeSection.getStringList("Shape");
+        ConfigurationSection materialsSection = recipeSection.getConfigurationSection("Materials");
+
+        if (shape.isEmpty() || materialsSection == null) {
             plugin.getLogger().warning("Receta incompleta para el ítem: " + path);
             return null;
         }
+
+        // Validar ItemsAdder antes de procesar la receta
         if (!plugin.isUsingItemsAdder()) {
-            for (String materialName : materials.values()) {
+            for (Object obj : materialsSection.getValues(false).values()) {
+                String materialName = obj.toString(); // Convertimos Object a String
                 if (materialName.startsWith("IA:")) {
                     plugin.getLogger().warning("ItemsAdder no está presente. Omitiendo receta: " + path);
-                    return null; 
+                    return null;
                 }
             }
         }
@@ -148,38 +149,28 @@ public class ItemManager {
         ShapedRecipe shapedRecipe = new ShapedRecipe(key, resultItem);
         shapedRecipe.shape(shape.toArray(new String[0]));
 
-        for (Map.Entry<String, String> entry : materials.entrySet()) {
-            char keyChar = entry.getKey().charAt(0);
-            String materialName = entry.getValue();
+        for (String keyChar : materialsSection.getKeys(false)) {
+            String materialName = materialsSection.getString(keyChar);
+            if (materialName == null) continue;
 
             if (materialName.startsWith("IA:")) {
-                try {
-                    Class<?> customStackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
-                    Object customStack = customStackClass.getMethod("getInstance", String.class)
-                            .invoke(null, materialName.replace("IA:", ""));
-                    if (customStack != null) {
-                        shapedRecipe.setIngredient(keyChar, new RecipeChoice.ExactChoice(
-                                (ItemStack) customStackClass.getMethod("getItemStack").invoke(customStack)
-                        ));
-                    } else {
-                        plugin.getLogger().warning("ItemsAdder: No se encontró el ítem " + materialName);
-                        return null; 
-                    }
-                } catch (Exception e) {
-                    plugin.getLogger().warning("Error al intentar cargar un ítem de ItemsAdder: " + e.getMessage());
-                    return null; 
+                ItemStack iaItem = loadItemsAdderItem(materialName);
+                if (iaItem != null) {
+                    shapedRecipe.setIngredient(keyChar.charAt(0), new RecipeChoice.ExactChoice(iaItem));
+                } else {
+                    plugin.getLogger().warning("ItemsAdder: No se encontró el ítem " + materialName);
+                    return null;
                 }
             } else {
                 Material material = Material.getMaterial(materialName);
                 if (material != null) {
-                    shapedRecipe.setIngredient(keyChar, material);
+                    shapedRecipe.setIngredient(keyChar.charAt(0), material);
                 } else {
                     plugin.getLogger().warning("Material inválido en la receta: " + materialName);
-                    return null; 
+                    return null;
                 }
             }
         }
-
         return shapedRecipe;
     }
 
@@ -188,7 +179,6 @@ public class ItemManager {
     }
 
     public boolean hasRecipe(String path) {
-        Map<String, Object> itemData = getItemData(path);
-        return itemData != null && itemData.containsKey("recipe");
+        return getItemSection(path) != null && getItemSection(path).contains("recipe");
     }
 }
